@@ -1,0 +1,14 @@
+bin/
+data/seq_data/
+data/sra_data/
+.snakemake/
+results/
+data/GCF_000699445.3*
+code/.ipynb_checkpoints/
+data/ncbi_dataset/
+code/notebooks/.ipynb_checkpoints/
+.pversion
+data/GCA_944470425.1_tdSchBovi1.1*
+.ipynb_checkpoints/
+todo.txt
+nohup.out

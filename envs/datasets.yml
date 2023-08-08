@@ -1,0 +1,9 @@
+name: datasets
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - ca-certificates=2022.9.24=ha878542_0
+  - ncbi-datasets-cli=13.42.1=ha770c72_1
+prefix: /master/nplatt/anaconda3/envs/datasets
