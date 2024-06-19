@@ -1,0 +1,294 @@
+#using snakemake v6.0.5
+#using conda v4.9.2
+
+# snakemake \
+#   --printshellcmds \
+#   --use-conda \
+#   --cluster 'qsub -V -cwd -S /bin/bash -pe smp {threads} -o {log}.log -j y' \
+#   --jobs 10 \
+#   --latency-wait 200 \
+#   --keep-going
+
+# conda env export >config/env.yml
+
+import os
+import pandas as pd
+from snakemake.utils import min_version
+
+##### set minimum snakemake version #####
+min_version("6.0.5")
+
+proj_dir    = "/master/nplatt/sch_hae_scan"
+data_dir    = "{}/data".format(proj_dir)
+results_dir = "{}/results".format(proj_dir)
+envs_dir    = "{}/envs".format(proj_dir)
+logs_dir    = "{}/logs".format(results_dir)
+
+configfile: "{}/config.yml".format(proj_dir)
+
+genome_fas="{}/schHae2_wmito.fa".format(data_dir)
+
+#make necessary output dirs
+#os.mkdir(results_dir + "/fastqc")
+#os.mkdir(results_dir + "/filtered_reads")
+
+
+rule all:
+    input:
+        expand("{dir}/seq_data/{id}_{read}.fq.gz", dir  = data_dir, 
+                                                   id   = config["sample_ids"], 
+                                                   read = ["R1", "R2"] ),
+        expand("{dir}/filtered_reads/{id}_filtered_{read}.fq.gz", dir  = results_dir,
+                                                                  id   = config["sample_ids"],
+                                                                  read = ["R1", "R2"]),
+        expand("{dir}/map_reads/{id}_processed{ext}", dir = results_dir, 
+                                                      id  = config["sample_ids"], 
+                                                      ext = [".bam", ".bam.bai"] ),
+        expand("{dir}/map_reads/{id}_processed.insert_metrics.{ext}", dir = results_dir, 
+                                                                      id  = config["sample_ids"], 
+                                                                      ext = ["txt", "pdf"] ),
+        #expand("{dir}/fastqc/{id}_R{read}_fastqc.{ext}", dir  = results_dir, 
+        #                                                 id   = config["sample_ids"], 
+        #                                                 read = ["1", "2"],
+        #                                                 ext  = ["zip", "html"] ),
+
+rule filter_new_reads:
+    input:
+        r1           = data_dir + "/seq_data/{id}_R1.fq.gz",
+        r2           = data_dir + "/seq_data/{id}_R2.fq.gz",
+        adapter_file = data_dir + "/adapters.fas"
+    output:
+        r1_pe = results_dir + "/filtered_reads/{id}_filtered_R1.fq.gz",
+        r2_pe = results_dir + "/filtered_reads/{id}_filtered_R2.fq.gz",
+        rx_se = results_dir + "/filtered_reads/{id}_filtered_RX.fq.gz",
+        r1_se = results_dir + "/filtered_reads/{id}_filtered_SE_R1.fq.gz",
+        r2_se = results_dir + "/filtered_reads/{id}_filtered_SE_R2.fq.gz"
+    threads:
+        4
+    log:
+        logs_dir + "/filter_exome_reads#{id}"
+    conda:
+        envs_dir + "/trimmomatic.yml"
+    shell:
+        """
+        trimmomatic \
+            PE \
+            -threads {threads} \
+            -phred33 \
+            {input.r1} \
+            {input.r2} \
+            {output.r1_pe} \
+            {output.r1_se} \
+            {output.r2_pe} \
+            {output.r2_se} \
+            LEADING:10 \
+            TRAILING:10 \
+            SLIDINGWINDOW:4:15 \
+            MINLEN:36 \
+            ILLUMINACLIP:{input.adapter_file}:2:30:10:1:true
+
+        zcat {output.r1_se} {output.r2_se} | gzip >{output.rx_se} 
+        """
+
+rule bwa_map:
+    input:
+        pe_read_fq      = results_dir + "/filtered_reads/{id}_filtered_{read}.fq.gz",
+        genome = genome_fas
+    output:
+        temp(results_dir + "/map_reads/{id}_{read}.sai")
+    threads:
+        4
+    log:
+        logs_dir + "/bwa_map_{read}#{id}"
+    conda:
+        envs_dir + "/bwa.yml"
+    shell:
+        """
+        bwa aln -t {threads} -n 15 -f {output} {input.genome} {input.pe_read_fq}
+        """
+
+rule bwa_sampe_samse:
+    input:
+        genome = genome_fas,
+        sai_r1 = results_dir + "/map_reads/{id}_R1.sai",
+        sai_r2 = results_dir + "/map_reads/{id}_R2.sai",
+        sai_rx = results_dir + "/map_reads/{id}_RX.sai",
+        r1_pe  = results_dir + "/filtered_reads/{id}_filtered_R1.fq.gz",
+        r2_pe  = results_dir + "/filtered_reads/{id}_filtered_R2.fq.gz",
+        rx_se  = results_dir + "/filtered_reads/{id}_filtered_RX.fq.gz",
+    output:
+        pe_bam = temp(results_dir + "/map_reads/{id}_PE.bam"),
+        se_bam = temp(results_dir + "/map_reads/{id}_SE.bam"),
+    threads:
+        4
+    log:
+        logs_dir + "/bwa_sampe_samse#{id}"
+    conda:
+        envs_dir + "/bwa.yml"
+    shell:
+        """
+        bwa sampe \
+            {input.genome} \
+            {input.sai_r1} \
+            {input.sai_r2} \
+            {input.r1_pe} \
+            {input.r2_pe} \
+            | samtools view \
+                -Sb \
+                -F 4 \
+                - \
+                >{output.pe_bam}
+
+        bwa samse \
+            {input.genome} \
+            {input.sai_rx} \
+            {input.rx_se} \
+             | samtools view \
+                -Sb \
+                -F 4 \
+                - \
+                >{output.se_bam}
+        """
+
+rule sort_merge_bam:
+    input:
+        pe_bam = rules.bwa_sampe_samse.output.pe_bam,
+        se_bam = rules.bwa_sampe_samse.output.se_bam
+    output:
+        pe_bam_sorted = temp(results_dir + "/map_reads/{id}_sorted_PE.bam"),
+        se_bam_sorted = temp(results_dir + "/map_reads/{id}_sorted_SE.bam"),
+        merged_bam    = temp(results_dir + "/map_reads/{id}_merged.bam")
+    threads:
+        12
+    log:
+        logs_dir + "/sort_merge_bam#{id}"
+    conda:
+        envs_dir + "/samtools.yml"
+    shell:
+      """
+        samtools sort -o {output.se_bam_sorted} {input.se_bam}
+        samtools sort -o {output.pe_bam_sorted} {input.pe_bam}
+            
+        samtools merge \
+            {output.merged_bam} \
+            {output.pe_bam_sorted} \
+            {output.se_bam_sorted} \
+        """
+
+rule add_readgroups:
+    input:
+        merged_bam = rules.sort_merge_bam.output.merged_bam
+    output:
+        rg_bam = temp(results_dir + "/map_reads/{id}_rg.bam"),
+    threads:
+        1
+    log:
+        logs_dir + "/add_readgroups#{id}"
+    conda:
+        envs_dir + "/gatk.yml"
+    shell:
+        """
+        bin/gatk-4.2.0.0/gatk AddOrReplaceReadGroups \
+            --INPUT {input.merged_bam} \
+            --OUTPUT {output.rg_bam} \
+            --RGPU unk \
+            --RGLB library1 \
+            --RGPL illumina \
+            --RGSM {wildcards.id} \
+            --RGID {wildcards.id}
+        """
+
+rule sort_bam_post_readgroup:
+    input:
+        rg_bam = rules.add_readgroups.output.rg_bam,
+    output:
+        rg_sortred_bam = temp(results_dir + "/map_reads/{id}_rg_sorted.bam")
+    threads:
+        12
+    log:
+        logs_dir + "/sort_bam_post_readgroup#{id}"
+    conda:
+        envs_dir + "/samtools.yml"
+    shell:
+        """
+        samtools sort -o {output.rg_sortred_bam} {input.rg_bam}
+        """
+
+#cheater code here to create a file for coverage estimates
+rule mark_duplicates_in_bam:
+    input:
+        rg_sortred_bam = rules.sort_bam_post_readgroup.output.rg_sortred_bam
+    output:
+        metrics = temp(results_dir + "/map_reads/{id}_dupmetrics.log"),
+        bam     = results_dir + "/map_reads/{id}_processed.bam",
+    threads:
+        2
+    log:
+        logs_dir + "/mark_duplicates_in_bam#{id}"
+    conda:
+        envs_dir + "/gatk.yml"
+    shell:
+        """
+        bin/gatk-4.2.0.0/gatk MarkDuplicates \
+            --INPUT {input.rg_sortred_bam} \
+            --OUTPUT {output.bam} \
+            --METRICS_FILE {output.metrics} \
+            --MAX_FILE_HANDLES_FOR_READ_ENDS_MAP 900 \
+            --ASSUME_SORT_ORDER coordinate
+        """
+
+rule index_bam:
+    input:
+        bam = rules.mark_duplicates_in_bam.output.bam
+    output:
+        index = results_dir + "/map_reads/{id}_processed.bam.bai"
+    threads:
+        1
+    log:
+        logs_dir + "/index_bam#{id}"
+    conda:
+        envs_dir + "/samtools.yml"
+    shell:
+        """
+        samtools index {input.bam}
+        """
+
+rule collect_insert_metrics:
+    input:
+        bam = rules.mark_duplicates_in_bam.output.bam
+    output:
+        pdf   = results_dir + "/map_reads/{id}_processed.insert_metrics.pdf",
+        table = results_dir + "/map_reads/{id}_processed.insert_metrics.txt"
+    threads:
+        2
+    log:
+        logs_dir + "/collect_insert_metrics#{id}"
+    conda:
+        envs_dir + "/gatk.yml"
+    shell:
+        """
+        bin/gatk-4.2.0.0/gatk CollectInsertSizeMetrics \
+            -I {input.bam} \
+            -H {output.pdf} \
+            -O {output.table}
+        """
+
+rule fastqc:
+    input:
+        r1 = data_dir + "/seq_data/{id}_R1.fq.gz",
+        r2 = data_dir + "/seq_data/{id}_R2.fq.gz",
+    output:
+        results_dir + "/fastqc/{id}_R1_fastqc.zip",
+        results_dir + "/fastqc/{id}_R2_fastqc.zip",
+        results_dir + "/fastqc/{id}_R1_fastqc.html",
+        results_dir + "/fastqc/{id}_R2_fastqc.html"
+    threads:
+        12
+    log:
+        logs_dir + "/fastqc#{id}"
+    conda:
+        envs_dir + "/fastqc.yml"
+    shell:
+        """
+        fastqc -o {results_dir}/fastqc -t {threads} -f fastq {input.r1} {input.r2}
+        """

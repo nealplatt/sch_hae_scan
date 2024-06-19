@@ -1,0 +1,59 @@
+import os
+import pandas as pd
+from snakemake.utils import min_version
+import glob
+
+#using
+# - snakemake v6.9.1
+# - using conda v4.10.3
+
+##### set minimum snakemake version #####
+min_version("6.9.1")
+
+
+#ex:
+# snakemake \
+#    --use-conda \
+#    --jobs 40 \
+#    --snake build_trees.snake \
+#    --cluster 'qsub -V -cwd -S /bin/bash -pe smp {threads} -o {log}.log -j y -q all.q' --printshellcmds
+
+#get the loci to make trees from
+loci = glob.glob("gene_phys/HiC_scaffold_*.phy")
+loci=[locus.replace("gene_phys/", "").replace(".phy", "") for locus in loci]
+
+localrules: 
+    all, 
+
+rule all:
+    input:
+        expand("gene_phys/{locus}.phy", locus = loci),
+        expand("gene_trees/{locus}.raxml.support", locus = loci),
+
+
+rule raxml:
+    input:
+        msa = "gene_phys/{locus}.phy"
+    output:
+        tree = "gene_trees/{locus}.raxml.support"
+    params:
+        prefix = "gene_trees/{locus}"
+    threads:
+        10
+    log:
+        "logs/{locus}.log"
+    conda:
+        "/master/nplatt/sch_hae_scan/envs/scan_phylo.yml"
+    shell:
+        """
+        raxml-ng \
+            --all \
+            --msa {input.msa} \
+            --msa-format PHYLIP \
+            --model GTR+ASC_LEWIS \
+            --tree pars{{10}} \
+            --bs-trees 100 \
+            --threads {threads} \
+            --prefix {params.prefix} \
+            --outgroup margrebowiei_zambia_ERR310940_h1
+        """
