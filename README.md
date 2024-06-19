@@ -1,6 +1,6 @@
 
 
-# Genomic data reveal a north-south split and introgression history in blood fluke (_Schistosoma haematobium_) populations from across Africa**
+# Genomic data reveal a north-south split and introgression history in blood fluke (_Schistosoma haematobium_) populations from across Africa
 
 ### Roy N. Platt II, Egie E. Enabulele, Ehizogie Adeyemi, Marian O Agbugui, Oluwaremilekun G Ajakaye, Ebube C Amaechi, Chika E Ejikeugwu, Christopher Igbeneghu, Victor S Njom, Precious Dlamini, Grace A. Arya, Robbie Diaz, Muriel Rabone, Fiona Allan, Bonnie Webster, Aidan Emery, David Rollinson, Timothy J.C. Anderson
 
