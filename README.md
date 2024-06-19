@@ -5,14 +5,23 @@
 ### Roy N. Platt II, Egie E. Enabulele, Ehizogie Adeyemi, Marian O Agbugui, Oluwaremilekun G Ajakaye, Ebube C Amaechi, Chika E Ejikeugwu, Christopher Igbeneghu, Victor S Njom, Precious Dlamini, Grace A. Arya, Robbie Diaz, Muriel Rabone, Fiona Allan, Bonnie Webster, Aidan Emery, David Rollinson, Timothy J.C. Anderson
 
 *Texas Biomedical Research Institute, San Antonio TX, United States*: RNPII, EEE, GA, RD, TJCA
+
 *Department of Pathology, University of Benin Teaching Hospital, Edo State, Nigeria*: EA
+
 *Department of Biological Sciences, Edo State University, Uzairue, Nigeria*: MOA
+
 *Department of Animal and Environmental Biology, Adekunle Ajasin University, Nigeria*: OGA
+
 *Department of Zoology, University of Ilorin, Kwara State, Nigeria*: ECA
+
 *Enugu State University of Science and Technology, Nigeria*: CEE
+
 *Department of Medical Laboratory Science, Ladoke Akintola University of Technology, Nigeria*: CI
+
 *Department of Applied Biology and Biotechnology, Enugu State University of Science and Technology, Nigeria*: VSN
+
 *TBD*: PA
+
 *Department of Life Sciences, Natural History Museum, London, United Kingdom*: MR, FA, BW, AE, DR
 
 **Keywords:** schistosomes, parasite, hybridization, introgression, admixture
