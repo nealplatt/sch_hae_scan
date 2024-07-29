@@ -1,4 +1,4 @@
-admera_id,barcode_label_ID,library_id,sample_name,sra_accession,presumed_species,country,locale,host,phenotype,project,data_type,lat,lon
+admera_id,barcode_label_ID,library_id,sample_name,sra_accession,presumed_species,country,locale,host,phenotype,project,data_type,lat,lon?
 19047FL-14-02-03,MCF03050E0612,na,sha_angola_cota_57,SRR11907442,s_sp,angola,na,snail,unk,scan_africa,genome,-9.26186,16.13693
 19047FL-14-02-04,MCF03050E0613,na,sha_angola_cota_58,SRR11907441,s_sp,angola,na,snail,unk,scan_africa,genome,-9.26186,16.13693
 19047FL-14-02-05,MCF03050E0614,na,sha_angola_cota_59,SRR11907440,s_sp,angola,na,snail,unk,scan_africa,genome,-9.26186,16.13693
@@ -435,7 +435,7 @@ na,na,na,bovis_tanzania_SRR7867226,SRR7867226,s_bovis,tanzania,na,na,bovis,Rey_2
 na,na,na,sh_cameroon_SRR13579883,SRR13579883,s_bovis,cameroon,na,na,bovis,Rey_2019,genome,NaN,NaN
 na,na,na,sh_egypt_SRR13579865,SRR13579865,s_haematobium,egypt,na,na,haematobium,Rey_2019,genome,NaN,NaN
 na,na,na,sh_mali_SRR13579867,SRR13579867,s_haematobium,mali,na,na,haematobium,Rey_2019,genome,NaN,NaN
-na,na,na,sh_nigeria_SRR13579869,SRR13579869,s_haematobium,nigeria,na,na,haematobium,Rey_2019,genome,NaN,NaN
+na,na,na,sh_nigeria_SRR13579869,SRR13579869,s_haematobium,sudan,na,na,haematobium,Rey_2019,genome,NaN,NaN
 na,na,na,sh_senegal_SRR13579881,SRR13579881,s_haematobium,senegal,na,na,haematobium,Rey_2019,genome,NaN,NaN
 na,na,na,sh_zanzibar_SRR13579868,SRR13579868,s_haematobium,zanzibar,na,na,haematobium,Rey_2019,genome,NaN,NaN
 na,na,na,sh_guineabissau_SRR13579870,SRR13579870,s_haematobium,guineabissau,na,na,haematobium,Rey_2019,genome,NaN,NaN

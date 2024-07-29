@@ -1,41 +1,54 @@
 #!/usr/bin/bash
 
+# Activate the conda environment for genome processing
 conda activate scan-01-process_genome
 
+# Set the project directory
 PROJ_DIR=/master/nplatt/sch_hae_scan
 
-mkdir ${PROJ_DIR}
+# Create the project directory and subdirectories
+mkdir -p ${PROJ_DIR}
 cd ${PROJ_DIR}
-
 mkdir results envs code bin data logs
 
-#prep genome
+# Prepare the genome
 cd ${PROJ_DIR}/data
 
+# Set the reference genome filename
 REF="GCF_000699445.3_UoM_Shae.V3_genomic.fna"
+
+# Download the reference genome dataset
 datasets download genome accession GCF_000699445.3 --filename GCF_000699445.3.zip
 
+# Unzip the downloaded genome dataset
 unzip GCF_000699445.3.zip
+
+# Create symbolic links to the reference genome and GFF files
 ln -s ncbi_dataset/data/GCF_000699445.3/GCF_000699445.3_UoM_Shae.V3_genomic.fna .
 ln -s ncbi_dataset/data/GCF_000699445.3/genomic.gff ./GCF_000699445.3_UoM_Shae.V3_genomic.gff
 
-#bwa index
+# Index the reference genome using BWA
 bwa index $REF
 
-#gatk seq dict
+# Activate the conda environment for filtering, mapping, and genotyping
 conda activate scan-02-filter_map_genotype
+
+# Create a sequence dictionary for the reference genome using GATK
 $PROJ_DIR/bin/gatk-4.2.0.0/gatk CreateSequenceDictionary -R $REF
+
+# Deactivate the conda environment
 conda deactivate
 
-#faidx
-samtools faidx $REF >samtools.faidx.log
+# Index the reference genome using samtools
+samtools faidx $REF > samtools.faidx.log
 
-#now get sra data ################################################################
+# Download SRA data
 mkdir -p $PROJ_DIR/data/sra_data
 cd $PROJ_DIR/data/sra_data
 
-#create an accession list of schistosoma samples
-echo 'ERR103048 bovis_tanzania_ERR103048
+# Create an accession list of Schistosoma samples
+cat <<EOL > SraAccList.txt
+ERR103048 bovis_tanzania_ERR103048
 ERR119612 guineensis_saotome_ERR119612
 ERR119621 smargrebowiei_zambia_ERR119621
 ERR119623 curassoni_senegal_ERR119623
@@ -77,37 +90,32 @@ SRR13579877 bovis_scan_SRR13579877
 SRR13579878 bovis_keyna_SRR13579878
 SRR7743803 f1sbsh_unk_SRR7743803
 SRR7867226 bovis_tanzania_SRR7867226
-SRR7867225 bovis_tanzania_SRR7867225'>SraAccList.txt
+SRR7867225 bovis_tanzania_SRR7867225
+EOL
 
+# Download and process each SRA sample
 while read -r LINE; do
-
-    #get sample info
+    # Extract SRA accession and sample name
     SRA=$(echo $LINE | cut -f1 -d" ")
     NAME=$(echo $LINE | cut -f2 -d" ")
 
     echo $NAME
 
-    #get sra file
-    prefetch \
-        --max-size 400g \
-        --output-directory . \
-        $SRA
+    # Download the SRA file
+    prefetch --max-size 400g --output-directory . $SRA
 
-    #split into fastqs
-    fastq-dump \
-        --outdir ./$SRA \
-        --gzip \
-        --split-files \
-        ./$SRA/$SRA.sra &
+    # Convert SRA to FASTQ and compress
+    fastq-dump --outdir ./$SRA --gzip --split-files ./$SRA/$SRA.sra &
 
+    # Remove existing FASTQ files with the same name
     rm ~/sch_hae_scan/data/seq_data/"$NAME"_R*.fq.gz
 
-    #rename to something useful
+    # Create symbolic links to the new FASTQ files
     ln -s ~/sch_hae_scan/data/sra_data/$SRA/"$SRA"_1.fastq.gz ~/sch_hae_scan/data/seq_data/"$NAME"_R1.fq.gz
     ln -s ~/sch_hae_scan/data/sra_data/$SRA/"$SRA"_2.fastq.gz ~/sch_hae_scan/data/seq_data/"$NAME"_R2.fq.gz
 
-done <SraAccList.txt
+done < SraAccList.txt
 
 ##################################################################################
-#                  proceed to 02-filter_map_genotype.snake
+# Proceed to 02-filter_map_genotype.snake
 ##################################################################################
