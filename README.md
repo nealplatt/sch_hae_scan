@@ -20,12 +20,12 @@
 
 *Department of Applied Biology and Biotechnology, Enugu State University of Science and Technology, Nigeria*: VSN
 
-*TBD*: PA
+*Central Public Health Offices, Manzini, Swaziland*: PD
 
 *Department of Life Sciences, Natural History Museum, London, United Kingdom*: MR, FA, BW, AE, DR
 
-**Keywords:** schistosomes, parasite, hybridization, introgression, admixture
+**Keywords:** schistosomes, parasite, _Schistosoma bovis_, hybridization, introgression desert, admixture
 
-**Abstract:** The human parasitic fluke, _Schistosoma haematobium_ hybridizes with the livestock parasite _S. bovis_ in the laboratory, but the extent of hybridization in nature is unclear. We analyzed 34.6 million single nucleotide variants in 167 _S. bovis_ and _S. haematobium_ from 18 African countries, revealing a sharp genetic discontinuity between northern and southern _S. haematobium_. There was no evidence for recent hybridization between _S. bovis_ and _S. haematobium_ but introgression occurred 257-879 generations ago in northern populations. Fifteen introgressed _S. bovis_ genes are approaching fixation in northern _S. haematobium,_ and 4 genes maybe driving adaptation. The _S. bovis_-like mitochondria in northern _S. haematobium_ form two separate clades providing further evidence that introgression is rare and ancient. The lack of evidence for recent hybridization between _S. haematobium_ and _S. bovis_ and strong barriers to interspecific gene flow suggest that limited benefits will result from linking interventions against these human and livestock pathogens.
+**Abstract:** The human parasitic fluke, _Schistosoma haematobium_ hybridizes with the livestock parasite _S. bovis_ in the laboratory, but the extent of hybridization in nature is unclear. We analyzed 34.6 million single nucleotide variants in 162 samples from 18 African countries, revealing a sharp genetic discontinuity between northern and southern _S. haematobium_. We found no evidence for recent hybridization. Instead the data reveal admixture events that occurred 257-879 generations ago in northern _S. haematobium_ populations. Fifteen introgressed S. bovis genes are approaching fixation in northern _S. haematobium_ with four genes potentially driving adaptation. We identified 19 regions that were resistant to introgression; these were enriched on the sex chromosomes. These results (i) demonstrate strong barriers to gene flow between these species, (ii) indicate that hybridization may be less common than currently envisaged, but (iii) reveal profound genomic consequences of interspecific hybridization between schistosomes of medical and veterinary importance.
 
 **Funding:** This work was funded by NIH NIAID (R01 AI166049).
