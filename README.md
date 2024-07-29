@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/124456755.svg)](https://zenodo.org/doi/10.5281/zenodo.2536389)
 
 
 # Genomic data reveal a north-south split and introgression history in blood fluke (_Schistosoma haematobium_) populations from across Africa
